@@ -1,0 +1,247 @@
+/* ============================================================
+   Blue Dog Website Manager — Admin Styles v1.0.6
+   ============================================================ */
+
+:root {
+    --wm-blue:       #2563eb;
+    --wm-blue-dark:  #1d4ed8;
+    --wm-blue-light: #eff6ff;
+    --wm-green:      #16a34a;
+    --wm-green-bg:   #f0fdf4;
+    --wm-gray-50:    #f9fafb;
+    --wm-gray-100:   #f3f4f6;
+    --wm-gray-200:   #e5e7eb;
+    --wm-gray-300:   #d1d5db;
+    --wm-gray-400:   #9ca3af;
+    --wm-gray-500:   #6b7280;
+    --wm-gray-700:   #374151;
+    --wm-gray-900:   #111827;
+    --wm-amber:      #d97706;
+    --wm-radius:     8px;
+    --wm-shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --wm-shadow-md:  0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+}
+
+.wm-wrap { max-width: 1100px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.wm-wrap * { box-sizing: border-box; }
+.wm-wrap > h1:first-child { display: none; }
+
+/* ── App header ─────────────────────────────────────────── */
+.wm-app-header { display:flex; align-items:center; justify-content:space-between; padding:20px 0 0; }
+.wm-app-header-left { display:flex; align-items:center; gap:14px; }
+.wm-app-icon { width:44px; height:44px; background:var(--wm-blue); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.wm-app-icon .dashicons { color:#fff; font-size:24px; width:24px; height:24px; }
+.wm-app-title { margin:0; font-size:20px; font-weight:700; color:var(--wm-gray-900); line-height:1.2; }
+.wm-app-subtitle { margin:2px 0 0; font-size:13px; color:var(--wm-gray-500); }
+.wm-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; background:var(--wm-blue-light); color:var(--wm-blue); border:1px solid #bfdbfe; }
+.wm-header-actions { display:flex; gap:8px; align-items:center; }
+
+/* ── Nav tabs ────────────────────────────────────────────── */
+.wm-nav { display:flex; margin:20px 0 0; border-bottom:2px solid var(--wm-gray-200); }
+.wm-nav a { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; font-size:13.5px; font-weight:500; color:var(--wm-gray-500); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .15s,border-color .15s; white-space:nowrap; }
+.wm-nav a:hover { color:var(--wm-gray-700); border-bottom-color:var(--wm-gray-300); }
+.wm-nav a.active { color:var(--wm-blue); border-bottom-color:var(--wm-blue); font-weight:600; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.wm-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:background .15s,transform .1s; text-decoration:none; line-height:1; font-family:inherit; }
+.wm-btn:focus { outline:none; box-shadow:0 0 0 3px rgba(37,99,235,.25); }
+.wm-btn:active { transform:translateY(1px); }
+.wm-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.wm-btn-primary { background:var(--wm-blue); color:#fff; }
+.wm-btn-primary:hover { background:var(--wm-blue-dark); color:#fff; }
+.wm-btn-secondary { background:var(--wm-gray-100); color:var(--wm-gray-700); border:1px solid var(--wm-gray-200); }
+.wm-btn-secondary:hover { background:var(--wm-gray-200); color:var(--wm-gray-900); }
+
+/* ── Page content ────────────────────────────────────────── */
+.wm-page-content { padding-top:24px; }
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.wm-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.wm-search-box { position:relative; flex:1; min-width:220px; max-width:420px; }
+.wm-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--wm-gray-400); pointer-events:none; display:flex; }
+.wm-search-input { width:100%; padding:9px 12px 9px 36px; border:1px solid var(--wm-gray-200); border-radius:6px; font-size:13.5px; color:var(--wm-gray-900); background:#fff; font-family:inherit; transition:border-color .15s,box-shadow .15s; line-height:1.5; }
+.wm-search-input:focus { outline:none; border-color:var(--wm-blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+.wm-search-input::placeholder { color:var(--wm-gray-400); }
+.wm-results-count { font-size:13px; color:var(--wm-gray-500); white-space:nowrap; }
+.wm-filter-tabs { display:flex; gap:4px; margin-left:auto; }
+.wm-filter-tab { padding:7px 14px; border-radius:6px; border:1px solid var(--wm-gray-200); background:#fff; font-size:13px; font-weight:500; color:var(--wm-gray-500); cursor:pointer; font-family:inherit; transition:all .15s; line-height:1.4; }
+.wm-filter-tab:hover { background:var(--wm-gray-50); color:var(--wm-gray-700); border-color:var(--wm-gray-300); }
+.wm-filter-tab.is-active { background:var(--wm-blue-light); color:var(--wm-blue); border-color:#bfdbfe; font-weight:600; }
+
+/* ── Feature grid ────────────────────────────────────────── */
+.wm-feature-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+/* Settings uses single column */
+.wm-settings-grid { grid-template-columns:1fr; }
+
+/* ─────────────────────────────────────────────────────────
+   CARD STRUCTURE — two variants:
+
+   A) Simple toggle card (most modules):
+      <div class="wm-card-row">
+        <label class="wm-feature-card">  ← clicking toggles checkbox
+          <div class="wm-feature-info">…</div>
+          <div class="wm-toggle-wrap"><input type="checkbox">…</div>
+        </label>
+      </div>
+
+   B) Card with gear button (bb_dashboard):
+      <div class="wm-card-row">
+        <label class="wm-feature-card">  ← clicking toggles checkbox
+          <div class="wm-feature-info">…</div>
+        </label>
+        <div class="wm-card-controls">   ← OUTSIDE label, no checkbox interference
+          <button class="wm-config-btn">⚙</button>
+          <label class="wm-toggle-label">  ← second label wraps only the toggle
+            <div class="wm-toggle-wrap"><input type="checkbox">…</div>
+          </label>
+        </div>
+      </div>
+   ───────────────────────────────────────────────────────── */
+
+.wm-card-row {
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--wm-radius);
+    box-shadow: var(--wm-shadow);
+    transition: box-shadow .15s;
+}
+.wm-card-row:hover { box-shadow: var(--wm-shadow-md); }
+.wm-card-row.is-hidden { display: none; }
+
+/* The label fills the row; border on it */
+.wm-feature-card {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid var(--wm-gray-200);
+    border-radius: var(--wm-radius);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 18px;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+/* When card has controls beside it, square off the right edge */
+.wm-card-row--with-controls .wm-feature-card {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.wm-feature-card:hover,
+.wm-card-row:hover .wm-feature-card { border-color: var(--wm-gray-300); }
+
+.wm-feature-card.is-active,
+.wm-card-row.is-active .wm-feature-card {
+    border-color: #bfdbfe;
+    background: var(--wm-blue-light);
+}
+
+/* Non-toggle cards on settings page */
+.wm-feature-card--static { cursor: default; }
+.wm-feature-card--static:hover,
+.wm-card-row:hover .wm-feature-card--static { border-color: var(--wm-gray-200); background: #fff; }
+
+.wm-feature-info { flex:1; min-width:0; }
+.wm-feature-label { display:block; font-size:13.5px; font-weight:600; color:var(--wm-gray-900); margin-bottom:4px; line-height:1.4; }
+.wm-feature-desc  { display:block; font-size:12.5px; color:var(--wm-gray-500); line-height:1.55; }
+.wm-feature-meta  { display:block; margin-top:7px; font-size:12px; color:var(--wm-gray-500); }
+.wm-feature-meta strong { color:var(--wm-gray-700); }
+.wm-feature-meta--warn  { color:var(--wm-amber); font-weight:500; }
+
+/* ── Controls panel (gear + toggle, sits outside label) ─── */
+.wm-card-controls {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #fff;
+    border: 1px solid var(--wm-gray-200);
+    border-left: none;
+    border-top-right-radius: var(--wm-radius);
+    border-bottom-right-radius: var(--wm-radius);
+    padding: 0 14px;
+    gap: 10px;
+    transition: border-color .15s, background .15s;
+}
+.wm-card-row.is-active .wm-card-controls {
+    border-color: #bfdbfe;
+    background: var(--wm-blue-light);
+}
+.wm-card-row:hover .wm-card-controls { border-color: var(--wm-gray-300); }
+
+/* Gear button */
+.wm-config-btn {
+    width:30px; height:30px; border-radius:6px;
+    border:1px solid var(--wm-gray-200); background:var(--wm-gray-50);
+    color:var(--wm-gray-500); font-size:15px; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background .15s,border-color .15s,color .15s; font-family:inherit; flex-shrink:0;
+}
+.wm-config-btn:hover { background:var(--wm-blue-light); border-color:#bfdbfe; color:var(--wm-blue); }
+.wm-config-btn.is-hidden { visibility:hidden; pointer-events:none; }
+
+/* Toggle-only label (inside controls panel) */
+.wm-toggle-label { display:flex; align-items:center; cursor:pointer; }
+
+/* ── Toggle switch ───────────────────────────────────────── */
+.wm-toggle-wrap { position:relative; flex-shrink:0; }
+.wm-toggle-input { position:absolute; opacity:0; width:0; height:0; }
+.wm-toggle-slider { display:block; width:40px; height:22px; background:var(--wm-gray-300); border-radius:11px; cursor:pointer; transition:background .2s ease; position:relative; }
+.wm-toggle-slider::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; background:#fff; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.wm-toggle-input:checked + .wm-toggle-slider { background:var(--wm-blue); }
+.wm-toggle-input:checked + .wm-toggle-slider::after { transform:translateX(18px); }
+
+/* ── Settings input fields ───────────────────────────────── */
+.wm-input-wrap { flex-shrink:0; width:280px; }
+.wm-text-input { width:100%; padding:9px 12px; border:1px solid var(--wm-gray-200); border-radius:6px; font-size:13.5px; color:var(--wm-gray-900); background:#fff; font-family:inherit; transition:border-color .15s,box-shadow .15s; line-height:1.5; }
+.wm-text-input:focus { outline:none; border-color:var(--wm-blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+.wm-text-input::placeholder { color:var(--wm-gray-400); }
+.wm-help { font-size:12px; color:var(--wm-gray-400); margin:5px 0 0; }
+.wm-help code { background:var(--wm-gray-100); padding:1px 5px; border-radius:3px; font-size:11.5px; }
+
+/* Dim white-label fields when toggle is off */
+.wm-wl-field { transition:opacity .2s; }
+.wm-field-disabled { opacity:.4; pointer-events:none; }
+
+/* ── No results ──────────────────────────────────────────── */
+.wm-no-results { display:none; grid-column:1/-1; text-align:center; padding:56px 20px; color:var(--wm-gray-500); font-size:14px; background:#fff; border:1px solid var(--wm-gray-200); border-radius:var(--wm-radius); box-shadow:var(--wm-shadow); }
+.wm-no-results.is-visible { display:block; }
+.wm-no-results-icon { font-size:32px; margin-bottom:10px; }
+
+/* ── Save bar ────────────────────────────────────────────── */
+.wm-save-bar { display:flex; align-items:center; gap:14px; margin-top:24px; padding:16px 20px; background:#fff; border:1px solid var(--wm-gray-200); border-radius:var(--wm-radius); box-shadow:var(--wm-shadow); }
+.wm-saved-msg { font-size:13.5px; color:var(--wm-green); font-weight:500; display:none; }
+.wm-saved-msg.is-visible { display:inline; }
+
+/* ── Notice ──────────────────────────────────────────────── */
+.wm-notice { display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:var(--wm-radius); margin-bottom:20px; font-size:13.5px; }
+.wm-notice-success { background:var(--wm-green-bg); border:1px solid #bbf7d0; color:#14532d; }
+
+/* ── Modals ──────────────────────────────────────────────── */
+.wm-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100000; align-items:center; justify-content:center; }
+.wm-modal-overlay.is-open { display:flex; }
+.wm-modal { background:#fff; border-radius:var(--wm-radius); padding:28px; width:500px; max-width:94vw; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.wm-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.wm-modal h3 { margin:0; font-size:16px; font-weight:700; color:var(--wm-gray-900); }
+.wm-modal-close-x { background:none; border:none; font-size:22px; color:var(--wm-gray-400); cursor:pointer; line-height:1; padding:0; font-family:inherit; }
+.wm-modal-close-x:hover { color:var(--wm-gray-700); }
+.wm-modal p { font-size:13px; color:var(--wm-gray-500); margin:0 0 14px; line-height:1.55; }
+.wm-modal textarea { width:100%; height:96px; font-family:"SF Mono",Menlo,Consolas,monospace; font-size:11.5px; padding:10px 12px; border:1px solid var(--wm-gray-200); border-radius:6px; resize:none; background:var(--wm-gray-50); color:var(--wm-gray-700); margin-bottom:16px; transition:border-color .15s,box-shadow .15s; }
+.wm-modal textarea:focus { outline:none; border-color:var(--wm-blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+.wm-modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* ── Template picker list ────────────────────────────────── */
+.wm-template-list { display:flex; flex-direction:column; gap:4px; max-height:320px; overflow-y:auto; margin-bottom:16px; border:1px solid var(--wm-gray-200); border-radius:6px; padding:6px; background:var(--wm-gray-50); }
+.wm-template-loading,.wm-template-empty { padding:24px; text-align:center; color:var(--wm-gray-400); font-size:13px; }
+.wm-template-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:6px; border:1px solid transparent; background:#fff; text-align:left; cursor:pointer; font-family:inherit; width:100%; transition:background .12s,border-color .12s; }
+.wm-template-item:hover { background:var(--wm-blue-light); border-color:#bfdbfe; }
+.wm-template-item.is-selected { background:var(--wm-blue-light); border-color:var(--wm-blue); }
+.wm-template-item-icon { font-size:16px; flex-shrink:0; }
+.wm-template-item-title { flex:1; font-size:13.5px; font-weight:500; color:var(--wm-gray-900); }
+.wm-template-item-check { color:var(--wm-blue); font-weight:700; margin-left:auto; flex-shrink:0; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width:900px) { .wm-feature-grid { grid-template-columns:1fr; } .wm-app-header { flex-direction:column; align-items:flex-start; gap:12px; } }
+@media (max-width:600px) { .wm-toolbar { flex-direction:column; align-items:stretch; } .wm-filter-tabs { margin-left:0; } .wm-search-box { max-width:100%; } .wm-input-wrap { width:100%; } }
