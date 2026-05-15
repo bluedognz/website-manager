@@ -161,7 +161,7 @@ class Website_Manager {
             $settings_cap, self::SETTINGS_SLUG, [ $this, 'render_settings_page' ]
         );
 
-        // Tools menu link
+        // Tools menu link — this is the only entry point; top-level menu is always hidden
         if ( ! $wl || $this->is_owner() ) {
             add_management_page(
                 $display, $display, 'manage_options',
@@ -169,9 +169,8 @@ class Website_Manager {
             );
         }
 
-        if ( $wl ) {
-            remove_menu_page( self::MENU_SLUG );
-        }
+        // Always remove from the main sidebar — access via Tools only
+        remove_menu_page( self::MENU_SLUG );
     }
 
     // =========================================================================
@@ -387,7 +386,11 @@ class Website_Manager {
                                 <span class="wm-feature-label"><?php echo esc_html( $feature['label'] ); ?></span>
                                 <span class="wm-feature-desc"><?php echo esc_html( $feature['desc'] ); ?></span>
                                 <?php if ( $selected_tpl_title ) : ?>
-                                    <span class="wm-feature-meta">Template: <strong><?php echo esc_html( $selected_tpl_title ); ?></strong></span>
+                                    <span class="wm-feature-meta">
+                                        Template: <strong><?php echo esc_html( $selected_tpl_title ); ?></strong>
+                                        <a href="<?php echo esc_url( admin_url( 'post.php?post=' . $selected_tpl_id . '&action=edit&fl_builder' ) ); ?>"
+                                           target="_blank" style="margin-left:8px;font-weight:500;">Open with Page Builder ↗</a>
+                                    </span>
                                 <?php elseif ( $checked ) : ?>
                                     <span class="wm-feature-meta wm-feature-meta--warn">⚠ No template selected — click ⚙ to choose one</span>
                                 <?php endif; ?>

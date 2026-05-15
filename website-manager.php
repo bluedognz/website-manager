@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Blue Dog Website Manager
  * Plugin URI:  https://github.com/bluedognz/website-manager
- * Description: A collection of toggleable utility functions and code snippets for WordPress websites.
- * Version:     1.0.7
+ * Description: A collection of utility modules for managing common WordPress site settings — enable or disable features on a per-site basis.
+ * Version:     1.0.8
  * Author:      Blue Dog Digital
  * Author URI:  http://www.bluedogdigitalmarketing.com
  * License:     GPL2
@@ -14,7 +14,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'WEBSITE_MANAGER_VERSION', '1.0.7' );
+define( 'WEBSITE_MANAGER_VERSION', '1.0.8' );
 define( 'WEBSITE_MANAGER_FILE',    __FILE__ );
 define( 'WEBSITE_MANAGER_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'WEBSITE_MANAGER_URL',     plugin_dir_url( __FILE__ ) );
