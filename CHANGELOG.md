@@ -3,6 +3,17 @@
 All notable changes to Blue Dog Website Manager are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.10] — 2026-05-15
+
+### Fixed
+- Plugin description now displays correctly in WP Plugins list under white label mode (was blank)
+
+## [1.0.9] — 2026-05-15
+
+### Fixed
+- Plugin always appears under Tools menu regardless of white label mode — never in main admin sidebar
+- Plugin name now correctly renamed in WP Plugins list for non-owner admins when white label is active
+
 ## [1.0.8] — 2026-05-15
 
 ### Added
