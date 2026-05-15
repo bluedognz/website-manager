@@ -132,7 +132,32 @@ class Website_Manager {
         add_action( 'admin_init',            [ $this, 'handle_save' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         add_action( 'wp_ajax_wm_get_bb_templates', [ $this, 'ajax_get_bb_templates' ] );
+
+        // Rename plugin in the Plugins list when white label is active
+        add_filter( 'all_plugins', [ $this, 'white_label_plugins_list' ] );
+
         $this->apply_features();
+    }
+
+    public function white_label_plugins_list( $plugins ) {
+        // Owner always sees the real name
+        if ( $this->is_owner() ) return $plugins;
+
+        $opts = $this->get_settings();
+        if ( empty( $opts['white_label_enabled'] ) || empty( $opts['white_label_name'] ) ) return $plugins;
+
+        $key = plugin_basename( WEBSITE_MANAGER_FILE );
+        if ( isset( $plugins[ $key ] ) ) {
+            $name = $opts['white_label_name'];
+            $plugins[ $key ]['Name']        = $name;
+            $plugins[ $key ]['Title']       = $name;
+            $plugins[ $key ]['Description'] = '';
+            $plugins[ $key ]['Author']      = '';
+            $plugins[ $key ]['AuthorName']  = '';
+            $plugins[ $key ]['PluginURI']   = '';
+            $plugins[ $key ]['AuthorURI']   = '';
+        }
+        return $plugins;
     }
 
     // =========================================================================
@@ -161,15 +186,14 @@ class Website_Manager {
             $settings_cap, self::SETTINGS_SLUG, [ $this, 'render_settings_page' ]
         );
 
-        // Tools menu link — this is the only entry point; top-level menu is always hidden
-        if ( ! $wl || $this->is_owner() ) {
-            add_management_page(
-                $display, $display, 'manage_options',
-                self::MENU_SLUG, [ $this, 'render_modules_page' ]
-            );
-        }
+        // Tools menu link — always the only entry point for all users
+        // (non-owners in WL mode see the renamed label; Settings stays inaccessible via capability)
+        add_management_page(
+            $display, $display, 'manage_options',
+            self::MENU_SLUG, [ $this, 'render_modules_page' ]
+        );
 
-        // Always remove from the main sidebar — access via Tools only
+        // Always remove from the main sidebar — Tools only
         remove_menu_page( self::MENU_SLUG );
     }
 
