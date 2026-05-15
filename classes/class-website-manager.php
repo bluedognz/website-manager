@@ -149,13 +149,12 @@ class Website_Manager {
         $key = plugin_basename( WEBSITE_MANAGER_FILE );
         if ( isset( $plugins[ $key ] ) ) {
             $name = $opts['white_label_name'];
-            $plugins[ $key ]['Name']        = $name;
-            $plugins[ $key ]['Title']       = $name;
-            $plugins[ $key ]['Description'] = '';
-            $plugins[ $key ]['Author']      = '';
-            $plugins[ $key ]['AuthorName']  = '';
-            $plugins[ $key ]['PluginURI']   = '';
-            $plugins[ $key ]['AuthorURI']   = '';
+            $plugins[ $key ]['Name']       = $name;
+            $plugins[ $key ]['Title']      = $name;
+            $plugins[ $key ]['Author']     = '';
+            $plugins[ $key ]['AuthorName'] = '';
+            $plugins[ $key ]['PluginURI']  = '';
+            $plugins[ $key ]['AuthorURI']  = '';
         }
         return $plugins;
     }
