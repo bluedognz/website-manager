@@ -3,6 +3,19 @@
 All notable changes to Blue Dog Website Manager are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.11] — 2026-05-20
+
+### Added
+- User Switching module — switch into any user account directly from the Users list
+- Red admin bar banner displayed while switched, visible on both admin and frontend
+- One-click Switch Back returns to owner account and redirects to Users list
+
+### Security
+- Switch links only visible to the owner admin account
+- Switching to the owner account is blocked server-side
+- Nested switching blocked
+- Switch cookie is HMAC-signed; switch-back verifies the stored user is the owner before restoring
+
 ## [1.0.10] — 2026-05-15
 
 ### Fixed

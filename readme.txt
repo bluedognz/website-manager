@@ -4,7 +4,7 @@ Tags: utility, admin, media, comments, performance
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 
 A collection of utility modules for managing common WordPress site settings — enable or disable features on a per-site basis.
@@ -37,6 +37,10 @@ A classic token with no scopes (read-only public repo access) is sufficient for 
 Settings can be exported as a base64 string and imported into another site via the Import panel on either the Modules or Settings tab.
 
 == Changelog ==
+
+= 1.0.11 =
+* Added: User Switching module — switch into any user account from the Users list with a one-click return
+* Security: Switch links visible to owner only; cannot switch to the owner account; cookie is signed to prevent tampering
 
 = 1.0.10 =
 * Fixed: Plugin description now displays correctly in WP Plugins list under white label mode
