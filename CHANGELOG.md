@@ -3,6 +3,11 @@
 All notable changes to Blue Dog Website Manager are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.12] — 2026-05-20
+
+### Fixed
+- Microthemer: Retain Styles When Deactivated module now correctly uses Microthemer's own `AssetLoad` class (via `micro-themes/autoload.php`) instead of manually enqueuing CSS files from `uploads/microthemer/css/`
+
 ## [1.0.11] — 2026-05-20
 
 ### Added

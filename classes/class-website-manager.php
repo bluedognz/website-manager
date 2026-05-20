@@ -674,23 +674,19 @@ class Website_Manager {
         }
 
         // ── Microthemer: retain styles when deactivated ───────
+        // Uses Microthemer's own AssetLoad class — mirrors the code snippet
+        // Microthemer provides for exactly this use case.
         if ( $this->is_active( 'microthemer_retain_styles' ) ) {
-            add_action( 'wp_enqueue_scripts', function () {
-                // If Microthemer is active it handles its own CSS — don't double-load.
-                if ( class_exists( 'Microthemer' ) || class_exists( 'Themeover\Microthemer\Application' ) ) return;
+            if ( ! defined( 'MT_IS_ACTIVE' ) ) {
+                $mt_dir   = WP_CONTENT_DIR . '/micro-themes/';
+                $autoload = $mt_dir . 'autoload.php';
+                $file     = $mt_dir . 'AssetLoad.php';
 
-                $upload_dir = wp_upload_dir();
-                $mt_dir     = trailingslashit( $upload_dir['basedir'] ) . 'microthemer/css/';
-                $mt_url     = trailingslashit( $upload_dir['baseurl'] ) . 'microthemer/css/';
-
-                if ( ! is_dir( $mt_dir ) ) return;
-
-                $files = glob( $mt_dir . '*.css' );
-                foreach ( (array) $files as $i => $file ) {
-                    $handle = 'wm-microthemer-' . $i;
-                    wp_enqueue_style( $handle, $mt_url . basename( $file ), [], null );
+                if ( ! class_exists( '\Microthemer\AssetLoad' ) && file_exists( $autoload ) && file_exists( $file ) ) {
+                    require $autoload;
+                    new \Microthemer\AssetLoad( true );
                 }
-            } );
+            }
         }
 
         // ── BB Dashboard replacement ───────────────────────────
