@@ -78,6 +78,10 @@ class Website_Manager {
                 'label' => 'Microthemer: Retain Styles When Deactivated',
                 'desc'  => 'Continues to load Microthemer\'s compiled CSS on the frontend even when the Microthemer plugin is deactivated.',
             ],
+            'user_switching' => [
+                'label' => 'User Switching',
+                'desc'  => 'Switch into any user account directly from the Users list. A red banner is shown while switched with a one-click return. Only available to the owner admin — clients cannot switch to your account.',
+            ],
         ];
     }
 
@@ -788,6 +792,119 @@ class Website_Manager {
                 });
                 </script>';
             } );
+        }
+
+        // ── User Switching ─────────────────────────────────────
+        if ( $this->is_active( 'user_switching' ) ) {
+
+            // "Switch to" link in Users list — owner only, not during a switched session
+            add_filter( 'user_row_actions', function ( $actions, $user ) {
+                if ( ! $this->is_owner() ) return $actions;
+                if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return $actions;
+
+                $opts        = $this->get_settings();
+                $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                if ( $user->user_login === $owner_login ) return $actions;
+
+                $url = wp_nonce_url(
+                    admin_url( 'users.php?wm_switch_to=' . $user->ID ),
+                    'wm_switch_' . $user->ID
+                );
+                $actions['wm_switch'] = '<a href="' . esc_url( $url ) . '">Switch to</a>';
+                return $actions;
+            }, 10, 2 );
+
+            // Handle switch / switch-back
+            add_action( 'admin_init', function () {
+
+                // ── Switch TO a user ──────────────────────────
+                if ( ! empty( $_GET['wm_switch_to'] ) ) {
+                    $target_id = absint( $_GET['wm_switch_to'] );
+                    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_' . $target_id ) ) return;
+                    if ( ! $this->is_owner() ) return;
+                    if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return; // No nested switching
+
+                    $target = get_user_by( 'id', $target_id );
+                    if ( ! $target ) return;
+
+                    $opts        = $this->get_settings();
+                    $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                    if ( $target->user_login === $owner_login ) return; // Can't switch to owner
+
+                    // Store original user in a signed session cookie
+                    $original_id = get_current_user_id();
+                    $hash        = hash_hmac( 'sha256', (string) $original_id, wp_hash( 'wm_switch' ) );
+                    setcookie( 'wm_switch_user', $original_id . '|' . $hash, 0, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+
+                    wp_clear_auth_cookie();
+                    wp_set_current_user( $target_id );
+                    wp_set_auth_cookie( $target_id, false );
+                    wp_safe_redirect( admin_url() );
+                    exit;
+                }
+
+                // ── Switch BACK ───────────────────────────────
+                if ( ! empty( $_GET['wm_switch_back'] ) ) {
+                    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_back' ) ) return;
+                    if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
+
+                    $parts = explode( '|', $_COOKIE['wm_switch_user'], 2 );
+                    if ( count( $parts ) !== 2 ) return;
+                    [ $original_id, $stored_hash ] = $parts;
+
+                    if ( ! hash_equals( hash_hmac( 'sha256', $original_id, wp_hash( 'wm_switch' ) ), $stored_hash ) ) return;
+
+                    $original_user = get_user_by( 'id', (int) $original_id );
+                    if ( ! $original_user ) return;
+
+                    // Confirm stored user is the owner before restoring
+                    $opts        = $this->get_settings();
+                    $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                    if ( $original_user->user_login !== $owner_login ) return;
+
+                    // Clear cookie and switch back
+                    setcookie( 'wm_switch_user', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+                    wp_clear_auth_cookie();
+                    wp_set_current_user( (int) $original_id );
+                    wp_set_auth_cookie( (int) $original_id, false );
+                    wp_safe_redirect( admin_url( 'users.php' ) );
+                    exit;
+                }
+            } );
+
+            // Red admin bar banner while switched
+            add_action( 'admin_bar_menu', function ( \WP_Admin_Bar $wp_admin_bar ) {
+                if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
+
+                $parts = explode( '|', $_COOKIE['wm_switch_user'], 2 );
+                if ( count( $parts ) !== 2 ) return;
+                [ $original_id, $stored_hash ] = $parts;
+                if ( ! hash_equals( hash_hmac( 'sha256', $original_id, wp_hash( 'wm_switch' ) ), $stored_hash ) ) return;
+
+                $current_user    = wp_get_current_user();
+                $switch_back_url = wp_nonce_url( admin_url( 'users.php?wm_switch_back=1' ), 'wm_switch_back' );
+
+                $wp_admin_bar->add_node( [
+                    'id'    => 'wm-user-switch',
+                    'title' => '⚡ Switched to: <strong>' . esc_html( $current_user->display_name ) . '</strong>&ensp;&mdash;&ensp;Switch Back',
+                    'href'  => esc_url( $switch_back_url ),
+                ] );
+            }, 1 );
+
+            // Style the banner — red, prominent, both admin and frontend
+            $switch_css = function () {
+                if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
+                echo '<style>
+                    #wpadminbar #wp-admin-bar-wm-user-switch { background: #b32d2e; }
+                    #wpadminbar #wp-admin-bar-wm-user-switch > .ab-item {
+                        color: #fff !important;
+                        font-weight: 600;
+                    }
+                    #wpadminbar #wp-admin-bar-wm-user-switch:hover > .ab-item { background: #8c2324; }
+                </style>';
+            };
+            add_action( 'admin_head', $switch_css );
+            add_action( 'wp_head',    $switch_css );
         }
     }
 }
