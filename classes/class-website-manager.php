@@ -793,8 +793,32 @@ class Website_Manager {
         // ── User Switching ─────────────────────────────────────
         if ( $this->is_active( 'user_switching' ) ) {
 
-            // "Switch to" link in Users list — owner only, not during a switched session
-            add_filter( 'user_row_actions', function ( $actions, $user ) {
+            // Helper: build a nonce-signed switch URL for a given user ID
+            $wm_switch_url = function ( $user_id ) {
+                return wp_nonce_url(
+                    admin_url( 'users.php?wm_switch_to=' . $user_id ),
+                    'wm_switch_' . $user_id
+                );
+            };
+
+            // Helper: build a nonce-signed switch-back URL
+            // Uses home_url so it works even when the user has no admin access.
+            $wm_switch_back_url = function () {
+                return wp_nonce_url( home_url( '/?wm_switch_back=1' ), 'wm_switch_back' );
+            };
+
+            // Helper: validate the switch cookie; returns original user ID or false.
+            $wm_validate_cookie = function () {
+                if ( empty( $_COOKIE['wm_switch_user'] ) ) return false;
+                $parts = explode( '|', $_COOKIE['wm_switch_user'], 2 );
+                if ( count( $parts ) !== 2 ) return false;
+                [ $original_id, $stored_hash ] = $parts;
+                if ( ! hash_equals( hash_hmac( 'sha256', $original_id, wp_hash( 'wm_switch' ) ), $stored_hash ) ) return false;
+                return (int) $original_id;
+            };
+
+            // ── "Switch to" link in Users list ───────────────
+            add_filter( 'user_row_actions', function ( $actions, $user ) use ( $wm_switch_url ) {
                 if ( ! $this->is_owner() ) return $actions;
                 if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return $actions;
 
@@ -802,94 +826,122 @@ class Website_Manager {
                 $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
                 if ( $user->user_login === $owner_login ) return $actions;
 
-                $url = wp_nonce_url(
-                    admin_url( 'users.php?wm_switch_to=' . $user->ID ),
-                    'wm_switch_' . $user->ID
-                );
-                $actions['wm_switch'] = '<a href="' . esc_url( $url ) . '">Switch to</a>';
+                $actions['wm_switch'] = '<a href="' . esc_url( $wm_switch_url( $user->ID ) ) . '">Switch to</a>';
                 return $actions;
             }, 10, 2 );
 
-            // Handle switch / switch-back
-            add_action( 'admin_init', function () {
+            // ── "Switch to" button on User Profile edit page ─
+            add_action( 'edit_user_profile', function ( \WP_User $user ) use ( $wm_switch_url ) {
+                if ( ! $this->is_owner() ) return;
+                if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return;
 
-                // ── Switch TO a user ──────────────────────────
-                if ( ! empty( $_GET['wm_switch_to'] ) ) {
-                    $target_id = absint( $_GET['wm_switch_to'] );
-                    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_' . $target_id ) ) return;
-                    if ( ! $this->is_owner() ) return;
-                    if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return; // No nested switching
-
-                    $target = get_user_by( 'id', $target_id );
-                    if ( ! $target ) return;
-
-                    $opts        = $this->get_settings();
-                    $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
-                    if ( $target->user_login === $owner_login ) return; // Can't switch to owner
-
-                    // Store original user in a signed session cookie
-                    $original_id = get_current_user_id();
-                    $hash        = hash_hmac( 'sha256', (string) $original_id, wp_hash( 'wm_switch' ) );
-                    setcookie( 'wm_switch_user', $original_id . '|' . $hash, 0, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
-
-                    wp_clear_auth_cookie();
-                    wp_set_current_user( $target_id );
-                    wp_set_auth_cookie( $target_id, false );
-                    wp_safe_redirect( admin_url() );
-                    exit;
-                }
-
-                // ── Switch BACK ───────────────────────────────
-                if ( ! empty( $_GET['wm_switch_back'] ) ) {
-                    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_back' ) ) return;
-                    if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
-
-                    $parts = explode( '|', $_COOKIE['wm_switch_user'], 2 );
-                    if ( count( $parts ) !== 2 ) return;
-                    [ $original_id, $stored_hash ] = $parts;
-
-                    if ( ! hash_equals( hash_hmac( 'sha256', $original_id, wp_hash( 'wm_switch' ) ), $stored_hash ) ) return;
-
-                    $original_user = get_user_by( 'id', (int) $original_id );
-                    if ( ! $original_user ) return;
-
-                    // Confirm stored user is the owner before restoring
-                    $opts        = $this->get_settings();
-                    $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
-                    if ( $original_user->user_login !== $owner_login ) return;
-
-                    // Clear cookie and switch back
-                    setcookie( 'wm_switch_user', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
-                    wp_clear_auth_cookie();
-                    wp_set_current_user( (int) $original_id );
-                    wp_set_auth_cookie( (int) $original_id, false );
-                    wp_safe_redirect( admin_url( 'users.php' ) );
-                    exit;
-                }
+                $opts        = $this->get_settings();
+                $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                if ( $user->user_login === $owner_login ) return;
+                ?>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row">Switch to User</th>
+                        <td>
+                            <a href="<?php echo esc_url( $wm_switch_url( $user->ID ) ); ?>" class="button">
+                                Switch to <?php echo esc_html( $user->display_name ); ?>
+                            </a>
+                            <p class="description">Log in as this user and browse the site from their perspective.</p>
+                        </td>
+                    </tr>
+                </table>
+                <?php
             } );
 
-            // Red admin bar banner while switched
-            add_action( 'admin_bar_menu', function ( \WP_Admin_Bar $wp_admin_bar ) {
-                if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
+            // ── "Switch to Customer" link on WooCommerce order pages ──
+            // Fires in both classic editor and HPOS order screens.
+            add_action( 'woocommerce_admin_order_data_after_billing_address', function ( $order ) use ( $wm_switch_url ) {
+                if ( ! $this->is_owner() ) return;
+                if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return;
 
-                $parts = explode( '|', $_COOKIE['wm_switch_user'], 2 );
-                if ( count( $parts ) !== 2 ) return;
-                [ $original_id, $stored_hash ] = $parts;
-                if ( ! hash_equals( hash_hmac( 'sha256', $original_id, wp_hash( 'wm_switch' ) ), $stored_hash ) ) return;
+                $customer_id = $order->get_customer_id();
+                if ( ! $customer_id ) return;
 
-                $current_user    = wp_get_current_user();
-                $switch_back_url = wp_nonce_url( admin_url( 'users.php?wm_switch_back=1' ), 'wm_switch_back' );
+                $customer = get_user_by( 'id', $customer_id );
+                if ( ! $customer ) return;
 
+                $opts        = $this->get_settings();
+                $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                if ( $customer->user_login === $owner_login ) return;
+
+                echo '<p style="margin-top:10px;">'
+                    . '<a href="' . esc_url( $wm_switch_url( $customer_id ) ) . '" class="button button-small">'
+                    . '⚡ Switch to Customer'
+                    . '</a></p>';
+            } );
+
+            // ── Handle switch TO a user (admin only) ─────────
+            add_action( 'admin_init', function () {
+                if ( empty( $_GET['wm_switch_to'] ) ) return;
+
+                $target_id = absint( $_GET['wm_switch_to'] );
+                if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_' . $target_id ) ) return;
+                if ( ! $this->is_owner() ) return;
+                if ( ! empty( $_COOKIE['wm_switch_user'] ) ) return; // No nested switching
+
+                $target = get_user_by( 'id', $target_id );
+                if ( ! $target ) return;
+
+                $opts        = $this->get_settings();
+                $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                if ( $target->user_login === $owner_login ) return; // Can't switch to owner
+
+                $original_id = get_current_user_id();
+                $hash        = hash_hmac( 'sha256', (string) $original_id, wp_hash( 'wm_switch' ) );
+                setcookie( 'wm_switch_user', $original_id . '|' . $hash, 0, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+
+                wp_clear_auth_cookie();
+                wp_set_current_user( $target_id );
+                wp_set_auth_cookie( $target_id, false );
+                wp_safe_redirect( home_url( '/' ) );
+                exit;
+            } );
+
+            // ── Handle switch BACK (works on both admin and frontend) ──
+            // Bound to `init` so it fires before any output, on any URL.
+            add_action( 'init', function () use ( $wm_validate_cookie ) {
+                if ( empty( $_GET['wm_switch_back'] ) ) return;
+                if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wm_switch_back' ) ) return;
+
+                $original_id = $wm_validate_cookie();
+                if ( ! $original_id ) return;
+
+                $original_user = get_user_by( 'id', $original_id );
+                if ( ! $original_user ) return;
+
+                // Confirm stored user is the owner before restoring
+                $opts        = $this->get_settings();
+                $owner_login = ! empty( $opts['white_label_user'] ) ? $opts['white_label_user'] : 'bluedogdigital';
+                if ( $original_user->user_login !== $owner_login ) return;
+
+                setcookie( 'wm_switch_user', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+                wp_clear_auth_cookie();
+                wp_set_current_user( $original_id );
+                wp_set_auth_cookie( $original_id, false );
+                wp_safe_redirect( admin_url( 'users.php' ) );
+                exit;
+            } );
+
+            // ── Red admin bar banner while switched (admin + frontend) ──
+            add_action( 'admin_bar_menu', function ( \WP_Admin_Bar $wp_admin_bar ) use ( $wm_validate_cookie, $wm_switch_back_url ) {
+                if ( ! $wm_validate_cookie() ) return;
+
+                $current_user = wp_get_current_user();
                 $wp_admin_bar->add_node( [
                     'id'    => 'wm-user-switch',
                     'title' => '⚡ Switched to: <strong>' . esc_html( $current_user->display_name ) . '</strong>&ensp;&mdash;&ensp;Switch Back',
-                    'href'  => esc_url( $switch_back_url ),
+                    'href'  => esc_url( $wm_switch_back_url() ),
                 ] );
             }, 1 );
 
-            // Style the banner — red, prominent, both admin and frontend
-            $switch_css = function () {
-                if ( empty( $_COOKIE['wm_switch_user'] ) ) return;
+            // Admin bar CSS — admin and frontend
+            $switch_css = function () use ( $wm_validate_cookie ) {
+                if ( ! $wm_validate_cookie() ) return;
                 echo '<style>
                     #wpadminbar #wp-admin-bar-wm-user-switch { background: #b32d2e; }
                     #wpadminbar #wp-admin-bar-wm-user-switch > .ab-item {
@@ -901,6 +953,55 @@ class Website_Manager {
             };
             add_action( 'admin_head', $switch_css );
             add_action( 'wp_head',    $switch_css );
+
+            // ── Frontend floating switch-back bar ─────────────
+            // Shown at the bottom of every frontend page while switched.
+            // Needed because the WP admin bar is hidden for low-permission users (e.g. customers).
+            add_action( 'wp_footer', function () use ( $wm_validate_cookie, $wm_switch_back_url ) {
+                if ( ! $wm_validate_cookie() ) return;
+
+                $current_user = wp_get_current_user();
+                $back_url     = $wm_switch_back_url();
+                ?>
+                <div id="wm-switch-bar">
+                    <span>⚡ Switched to: <strong><?php echo esc_html( $current_user->display_name ); ?></strong></span>
+                    <a href="<?php echo esc_url( $back_url ); ?>" id="wm-switch-bar-back">← Return to Admin</a>
+                </div>
+                <style>
+                    #wm-switch-bar {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background: #b32d2e;
+                        color: #fff;
+                        padding: 10px 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        z-index: 99999;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        font-size: 14px;
+                        font-weight: 500;
+                        box-shadow: 0 -2px 10px rgba(0,0,0,0.25);
+                    }
+                    #wm-switch-bar-back {
+                        color: #fff;
+                        background: rgba(255,255,255,0.2);
+                        padding: 6px 14px;
+                        border-radius: 4px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        white-space: nowrap;
+                    }
+                    #wm-switch-bar-back:hover {
+                        background: rgba(255,255,255,0.35);
+                        color: #fff;
+                        text-decoration: none;
+                    }
+                </style>
+                <?php
+            } );
         }
     }
 }

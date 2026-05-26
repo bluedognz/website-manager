@@ -3,6 +3,16 @@
 All notable changes to Blue Dog Website Manager are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.13] — 2026-05-26
+
+### Added
+- User Switching: "Switch to" button on the User Profile edit page
+- User Switching: "Switch to Customer" button on WooCommerce order admin pages (fires via `woocommerce_admin_order_data_after_billing_address`, works with both classic editor and HPOS)
+- User Switching: Fixed red bar at the bottom of every frontend page while switched, containing a "Return to Admin" link — for users (e.g. customers) whose admin bar is hidden
+
+### Fixed
+- User Switching: Switch-back handler moved from `admin_init` to `init` so it works from frontend URLs, not just admin pages
+
 ## [1.0.12] — 2026-05-20
 
 ### Fixed

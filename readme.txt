@@ -4,7 +4,7 @@ Tags: utility, admin, media, comments, performance
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: GPLv2 or later
 
 A collection of utility modules for managing common WordPress site settings — enable or disable features on a per-site basis.
@@ -37,6 +37,12 @@ A classic token with no scopes (read-only public repo access) is sufficient for 
 Settings can be exported as a base64 string and imported into another site via the Import panel on either the Modules or Settings tab.
 
 == Changelog ==
+
+= 1.0.13 =
+* Added: "Switch to" button on the User Profile edit page
+* Added: "Switch to Customer" button on WooCommerce order admin pages
+* Added: Fixed red bar at the bottom of the frontend with a "Return to Admin" link — shown when switched to a user whose admin bar is hidden (e.g. customers)
+* Fixed: Switch-back now works from the frontend as well as the admin
 
 = 1.0.12 =
 * Fixed: Microthemer "Retain Styles When Deactivated" module — now correctly uses Microthemer's own AssetLoad class instead of manually enqueuing CSS files
